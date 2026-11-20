@@ -94,13 +94,13 @@ function header(w, d, small) {
   logo(h, small);
   h.addSpacer(7);
   const t = h.addStack(); t.layoutVertically();
-  txt(t, "MALWA", Font.heavySystemFont(small ? 12 : 14), C.text);
-  if (!small) txt(t, "Financial Summary", Font.mediumSystemFont(10), C.muted);
+  txt(t, "MALWA", Font.heavySystemFont(small ? 12 : 16), C.text);
+  if (!small) txt(t, "Financial Summary", Font.mediumSystemFont(11), C.muted);
   h.addSpacer();
   if (!small && d.asOf) {
     const pill = h.addStack(); pill.setPadding(3, 8, 3, 8); pill.cornerRadius = 10; pill.backgroundColor = C.tile; pill.centerAlignContent();
     const dot = pill.addStack(); dot.size = new Size(6, 6); dot.cornerRadius = 3; dot.backgroundColor = d.live ? C.green : C.gold; pill.addSpacer(5);
-    txt(pill, dateLabel(new Date(Date.now() + 3 * 3600 * 1000).toISOString().slice(0, 10)), Font.semiboldSystemFont(10), C.muted);
+    txt(pill, dateLabel(new Date(Date.now() + 3 * 3600 * 1000).toISOString().slice(0, 10)), Font.semiboldSystemFont(11), C.muted);
   }
 }
 // sales split: falls back to the book's own month figures if the split isn't in the data yet
@@ -113,14 +113,14 @@ function sales(d) {
 const pct = (v, t) => (t > 0 ? Math.round(v / t * 100) : 0) + "%";
 function salesHead(w, d, big) {
   const S = sales(d), r = w.addStack(); r.centerAlignContent();
-  txt(r, ((S.label || "This month") + " · Net sales").toUpperCase(), Font.semiboldSystemFont(big ? 10 : 9), C.faint, 0.7);
+  txt(r, ((S.label || "This month") + " · Net sales").toUpperCase(), Font.semiboldSystemFont(10), C.faint, 0.7);
   r.addSpacer();
   if (big) { const pc = (d.profitMonth || 0) < 0 ? C.red : C.green, chip = r.addStack(); chip.setPadding(3, 8, 3, 8); chip.cornerRadius = 9; chip.backgroundColor = new Color(pc.hex, 0.18);
-    txt(chip, "Profit " + fmt3(d.profitMonth), Font.semiboldSystemFont(11), pc, 0.7); }
+    txt(chip, "Profit " + fmt3(d.profitMonth), Font.semiboldSystemFont(10), pc, 0.7); }
   w.addSpacer(2);
   const n = w.addStack(); n.bottomAlignContent(); const [ip, fp] = fmt3(S.net).split(".");
-  txt(n, ip, Font.boldSystemFont(big ? 30 : 26), C.text, 0.5); txt(n, "." + fp, Font.semiboldSystemFont(big ? 16 : 14), C.muted);
-  n.addSpacer(5); txt(n, "KWD", Font.semiboldSystemFont(big ? 11 : 9), C.faint);
+  txt(n, ip, Font.boldRoundedSystemFont(27), C.text, 0.5); txt(n, "." + fp, Font.semiboldRoundedSystemFont(17), C.muted);
+  n.addSpacer(5); txt(n, "KWD", Font.semiboldSystemFont(10), C.faint);
   return S;
 }
 function legend(w, S, cols, fs, compact) {
@@ -131,9 +131,9 @@ function legend(w, S, cols, fs, compact) {
       if (j) r.addSpacer(10);
       const cell = r.addStack(); cell.centerAlignContent();
       const dot = cell.addStack(); dot.size = new Size(7, 7); dot.cornerRadius = 3.5; dot.backgroundColor = c; cell.addSpacer(5);
-      txt(cell, l, Font.mediumSystemFont(fs), C.muted, 0.7); cell.addSpacer();
-      txt(cell, (compact ? short(v) : fmt3(v)) + "  ", Font.semiboldSystemFont(fs), C.text, 0.6);
-      txt(cell, pct(v, tot), Font.semiboldSystemFont(fs - 1), c);
+      txt(cell, l, Font.regularSystemFont(fs), C.muted, 0.7); cell.addSpacer();
+      txt(cell, (compact ? short(v) : fmt3(v)) + "  ", Font.semiboldMonospacedSystemFont(fs), C.text, 0.6);
+      txt(cell, pct(v, tot), Font.semiboldSystemFont(fs), c);
     });
     if (i + cols < S.parts.length) w.addSpacer(4);
   }
@@ -146,17 +146,17 @@ function tile(parent, sym, col, label, value, valCol, w, h) {
   const v = t.addStack(); v.layoutVertically();
   txt(v, label, Font.mediumSystemFont(11), col, 0.7);
   v.addSpacer(2);
-  txt(v, value, Font.boldSystemFont(19), C.text, 0.55);
+  txt(v, value, Font.semiboldRoundedSystemFont(15), C.text, 0.55);
   t.addSpacer();
 }
 function sup(d) { const v = d.sup || 0; return v < 0 ? { label: "Supplier advance", val: -v, col: C.teal } : { label: "Suppliers owed", val: v, col: C.amber }; }
 function footer(w, d) {
   const f = w.addStack(); f.centerAlignContent();
-  icon(f, d.live ? "lock.fill" : "wifi.slash", C.faint, 8); f.addSpacer(4);
+  icon(f, d.live ? "lock.fill" : "wifi.slash", C.faint, 7); f.addSpacer(4);
   const at = d.pub ? new Date(d.pub) : null;
-  txt(f, (d.live ? "Encrypted" : "Offline") + " · updated " + (at ? at.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"), Font.systemFont(10), C.faint, 0.7);
+  txt(f, (d.live ? "Encrypted" : "Offline") + " · updated " + (at ? at.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"), Font.regularSystemFont(9), C.faint, 0.7);
   f.addSpacer();
-  if (d.review) { icon(f, "exclamationmark.triangle.fill", C.gold, 9); f.addSpacer(3); txt(f, d.review + " in Review", Font.semiboldSystemFont(10), C.gold); }
+  if (d.review) { icon(f, "exclamationmark.triangle.fill", C.gold, 8); f.addSpacer(3); txt(f, d.review + " in Review", Font.semiboldSystemFont(9), C.gold); }
 }
 function bar(w, S, width, h) { w.addImage(splitBar(S.parts.map(p => ({ v: p[1], col: p[2] })), width, h)).imageSize = new Size(width, h); }
 
@@ -190,16 +190,16 @@ function large(d) {
   const S = salesHead(w, d, true); w.addSpacer(5);
   bar(w, S, 306, 8); w.addSpacer(6);
   legend(w, S, 2, 10, false); w.addSpacer(8);
-  const r1 = w.addStack(); tile(r1, "banknote.fill", C.gold, "Cash in hand", fmt3(d.cash), null, 149, 52); r1.addSpacer(8); tile(r1, "building.columns.fill", C.sky, "Bank total", fmt3(d.bankTot), null, 149, 52);
+  const r1 = w.addStack(); tile(r1, "banknote.fill", C.gold, "Cash in hand", fmt3(d.cash), null, 149, 48); r1.addSpacer(8); tile(r1, "building.columns.fill", C.sky, "Bank total", fmt3(d.bankTot), null, 149, 48);
   w.addSpacer(6);
-  const r2 = w.addStack(); tile(r2, "person.2.fill", C.green, "Customers owe", fmt3(d.owe), null, 149, 52); r2.addSpacer(8); tile(r2, "shippingbox.fill", P.col, P.label, fmt3(P.val), null, 149, 52);
+  const r2 = w.addStack(); tile(r2, "person.2.fill", C.green, "Customers owe", fmt3(d.owe), null, 149, 48); r2.addSpacer(8); tile(r2, "shippingbox.fill", P.col, P.label, fmt3(P.val), null, 149, 48);
   w.addSpacer(8);
   const banks = (d.banks || []).slice(0, 3), maxB = Math.max(1, ...banks.map(b => Math.abs(b.v)));
   banks.forEach((b, i) => {
     const r = w.addStack(); r.centerAlignContent();
-    const nm = r.addStack(); nm.size = new Size(96, 0); txt(nm, b.n.replace(/\s*-\s*Bank/i, "").replace(/\[.*\]/, "").replace(/\s*-\s*.*/, "").trim(), Font.mediumSystemFont(11), C.muted, 0.7); nm.addSpacer();
+    const nm = r.addStack(); nm.size = new Size(96, 0); txt(nm, b.n.replace(/\s*-\s*Bank/i, "").replace(/\[.*\]/, "").replace(/\s*-\s*.*/, "").trim(), Font.mediumSystemFont(10), C.muted, 0.7); nm.addSpacer();
     r.addSpacer(6); r.addImage(meter(Math.abs(b.v) / maxB, 120, 6, C.cream)).imageSize = new Size(120, 6);
-    r.addSpacer(); txt(r, fmt0(b.v), Font.semiboldSystemFont(12), C.text);
+    r.addSpacer(); txt(r, fmt0(b.v), Font.semiboldMonospacedSystemFont(11), C.text);
     if (i < banks.length - 1) w.addSpacer(3);
   });
   w.addSpacer(); footer(w, d);
