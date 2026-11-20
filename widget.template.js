@@ -10,14 +10,15 @@ const MWCrypto = (function () { const module = { exports: {} };
 /*__MWCRYPTO__*/
 return module.exports; })();
 
-/* ---------- palette ---------- */
+/* ---------- palette (Malwa Account Book: maroon + gold) ---------- */
 const C = {
-  bg1: new Color("#0b1d36"), bg2: new Color("#14325c"),
-  tile: new Color("#ffffff", 0.07), line: new Color("#ffffff", 0.10),
-  text: Color.white(), muted: new Color("#c9d6ea", 0.72), faint: new Color("#c9d6ea", 0.45),
-  gold: new Color("#f2c46d"), green: new Color("#5fe3a1"), red: new Color("#ff7b7b"),
-  blue: new Color("#7cb8ff"), violet: new Color("#b59cff"), teal: new Color("#5ad1d6"),
+  m1: "#8a1c22", m2: "#6e1a1e", m3: "#4a0d11",
+  tile: new Color("#ffffff", 0.08), line: new Color("#ffffff", 0.12),
+  text: new Color("#fff8ee"), muted: new Color("#f1ebe5", 0.78), faint: new Color("#f1ebe5", 0.52),
+  gold: new Color("#f2d43d"), gold2: new Color("#e9c400"), green: new Color("#6cc795"), red: new Color("#ff9a8f"),
+  cream: new Color("#f6e3c4"), rose: new Color("#f0a7a0"), amber: new Color("#eba27a"),
 };
+C.blue = C.cream; C.violet = C.rose; C.teal = C.cream; // roles used below
 
 /* ---------- number formats ---------- */
 const sign = v => (v < 0 ? "−" : "");
@@ -72,7 +73,7 @@ function icon(stack, name, col, size) { const s = SFSymbol.named(name); if (!s) 
 function txt(stack, s, font, col, scale) { const t = stack.addText(s); t.font = font; t.textColor = col; t.lineLimit = 1; if (scale) t.minimumScaleFactor = scale; return t; }
 function header(w, d, small) {
   const h = w.addStack(); h.centerAlignContent();
-  const badge = h.addStack(); badge.size = new Size(22, 22); badge.cornerRadius = 7; badge.backgroundColor = new Color(C.gold.hex, 0.18); badge.centerAlignContent();
+  const badge = h.addStack(); badge.size = new Size(22, 22); badge.cornerRadius = 7; badge.backgroundColor = new Color("#e9c400", 0.22); badge.centerAlignContent();
   badge.addSpacer(); icon(badge, "chart.line.uptrend.xyaxis", C.gold, 11); badge.addSpacer();
   h.addSpacer(7);
   const t = h.addStack(); t.layoutVertically();
@@ -114,7 +115,7 @@ function tile(parent, sym, col, label, value, sub, w, h) {
   txt(t, value, Font.boldRoundedSystemFont(15), C.text, 0.55);
   if (sub) txt(t, sub, Font.systemFont(8), C.faint, 0.7);
 }
-function sup(d) { const v = d.sup || 0; return v < 0 ? { label: "Supplier adv.", val: -v, sub: "you paid ahead", col: C.teal } : { label: "Payable", val: v, sub: "you owe suppliers", col: C.red }; }
+function sup(d) { const v = d.sup || 0; return v < 0 ? { label: "Supplier adv.", val: -v, sub: "you paid ahead", col: C.teal } : { label: "Payable", val: v, sub: "you owe suppliers", col: C.amber }; }
 function footer(w, d) {
   const f = w.addStack(); f.centerAlignContent();
   icon(f, d.live ? "lock.fill" : "wifi.slash", C.faint, 7); f.addSpacer(4);
@@ -125,9 +126,23 @@ function footer(w, d) {
 }
 
 /* ---------- layouts ---------- */
+function hexRGB(h) { return [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)); }
+function mix(a, b, t) { const A = hexRGB(a), B = hexRGB(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); }
+function backdrop(fam) { // maroon gradient + the book's gold hexagon motif
+  const [W, H] = fam === "small" ? [170, 170] : fam === "medium" ? [364, 170] : [364, 382];
+  const c = ctx(W, H), N = 64;
+  for (let i = 0; i < N; i++) { const t = i / (N - 1), col = t < 0.55 ? mix(C.m1, C.m2, t / 0.55) : mix(C.m2, C.m3, (t - 0.55) / 0.45);
+    c.setFillColor(new Color(col)); c.fillRect(new Rect(0, Math.floor(i * H / N), W, Math.ceil(H / N) + 1)); }
+  const hex = (cx, cy, rx, ry, col, lw) => { const p = new Path(); p.move(new Point(cx - rx, cy)); p.addLine(new Point(cx - rx * 0.6, cy - ry)); p.addLine(new Point(cx + rx * 0.6, cy - ry));
+    p.addLine(new Point(cx + rx, cy)); p.addLine(new Point(cx + rx * 0.6, cy + ry)); p.addLine(new Point(cx - rx * 0.6, cy + ry)); p.closeSubpath(); c.addPath(p); c.setStrokeColor(col); c.setLineWidth(lw); c.strokePath(); };
+  const cx = W * 0.86, cy = H * 0.9, r = Math.min(W, H) * 0.55;
+  hex(cx, cy, r, r * 0.6, new Color("#ffffff", 0.05), 5); hex(cx, cy, r * 0.73, r * 0.42, new Color("#e9c400", 0.16), 4);
+  c.setFillColor(new Color("#e9c400", 0.9)); c.fillRect(new Rect(0, 0, W * 0.7, 2)); c.setFillColor(new Color("#ffffff", 0.35)); c.fillRect(new Rect(W * 0.7, 0, W * 0.3, 2));
+  return c.getImage();
+}
+let FAM = "large";
 function base() {
-  const w = new ListWidget(); w.url = APP;
-  const g = new LinearGradient(); g.colors = [C.bg1, C.bg2]; g.locations = [0, 1]; g.startPoint = new Point(0, 0); g.endPoint = new Point(1, 1); w.backgroundGradient = g;
+  const w = new ListWidget(); w.url = APP; w.backgroundColor = new Color(C.m2); w.backgroundImage = backdrop(FAM);
   w.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000); return w;
 }
 function small(d, hist) {
@@ -201,7 +216,7 @@ function errorWidget(msg) { const w = base(); w.setPadding(14, 14, 14, 14); head
 
 /* ---------- run ---------- */
 const data = await load();
-const fam = config.widgetFamily || "large";
+const fam = config.widgetFamily || "large"; FAM = fam;
 const hist = data.err ? [] : history(data);
 const widget = data.err ? errorWidget(data.err) : fam === "small" ? small(data, hist) : fam === "medium" ? medium(data, hist) : large(data, hist);
 if (config.runsInWidget) Script.setWidget(widget);
