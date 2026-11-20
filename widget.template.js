@@ -5,6 +5,9 @@
 const KEY = "__MW_KEY__";
 const URL_DATA = "https://raw.githubusercontent.com/nawaderksm53-gif/Malwa-Widget/main/data.enc";
 const APP = "https://claude.ai/artifact/S61xYX8NNjV9vhdLrwz2hL";
+// Logo badge: 1 = solid gold, 2 = cream with gold ring, 3 = gold "M" monogram, 4 = your own logo image (set LOGO_URL)
+const LOGO_STYLE = 1;
+const LOGO_URL = ""; // e.g. a PNG of the Malwa logo; used when LOGO_STYLE = 4
 
 const MWCrypto = (function () { const module = { exports: {} };
 /*__MWCRYPTO__*/
@@ -72,10 +75,20 @@ function base() {
 /* ---------- building blocks ---------- */
 function txt(stack, s, font, col, scale) { const t = stack.addText(s); t.font = font; t.textColor = col; t.lineLimit = 1; if (scale) t.minimumScaleFactor = scale; return t; }
 function dateLabel(iso) { const [y, m, dd] = iso.split("-").map(Number); return new Date(y, m - 1, dd).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }); }
+let LOGO_IMG = null;
+async function loadLogo() { if (LOGO_STYLE !== 4 || !LOGO_URL) return; try { LOGO_IMG = await new Request(LOGO_URL).loadImage(); } catch (e) { LOGO_IMG = null; } }
+function logo(h, small) {
+  const z = small ? 24 : 30, b = h.addStack(); b.size = new Size(z, z); b.centerAlignContent();
+  const style = LOGO_STYLE === 4 && !LOGO_IMG ? 1 : LOGO_STYLE;
+  if (style === 4) { b.cornerRadius = 8; b.backgroundColor = Color.white(); const i = b.addImage(LOGO_IMG); i.imageSize = new Size(z - 4, z - 4); i.applyFittingContentMode(); return; }
+  if (style === 3) { b.cornerRadius = z / 2; b.backgroundColor = C.gold; b.addSpacer(); txt(b, "M", new Font("Georgia-Bold", small ? 15 : 18), new Color(C.m3)); b.addSpacer(); return; }
+  b.cornerRadius = small ? 7 : 9;
+  if (style === 2) { b.backgroundColor = C.text; b.borderColor = C.gold; b.borderWidth = 2; } else b.backgroundColor = C.gold;
+  b.addSpacer(); icon(b, "chart.line.uptrend.xyaxis", new Color(style === 2 ? C.m1 : C.m3), small ? 12 : 14); b.addSpacer();
+}
 function header(w, d, small) {
   const h = w.addStack(); h.centerAlignContent();
-  const badge = h.addStack(); badge.size = new Size(small ? 20 : 24, small ? 20 : 24); badge.cornerRadius = 8; badge.backgroundColor = new Color("#e9c400", 0.22); badge.centerAlignContent();
-  badge.addSpacer(); icon(badge, "chart.line.uptrend.xyaxis", C.gold, small ? 10 : 12); badge.addSpacer();
+  logo(h, small);
   h.addSpacer(7);
   const t = h.addStack(); t.layoutVertically();
   txt(t, "MALWA", Font.heavySystemFont(small ? 12 : 14), C.text);
@@ -123,15 +136,17 @@ function legend(w, S, cols, fs, compact) {
   }
 }
 function tile(parent, sym, col, label, value, valCol, w, h) {
-  const t = parent.addStack(); t.size = new Size(w, h); t.cornerRadius = 12; t.backgroundColor = C.tile; t.setPadding(5, 8, 5, 8); t.centerAlignContent();
-  const b = t.addStack(); b.size = new Size(22, 22); b.cornerRadius = 11; b.backgroundColor = new Color(col.hex, 0.2); b.centerAlignContent(); b.addSpacer(); icon(b, sym, col, 10); b.addSpacer();
-  t.addSpacer(7);
+  const t = parent.addStack(); t.size = new Size(w, h); t.cornerRadius = 12; t.setPadding(5, 9, 5, 8); t.centerAlignContent();
+  t.backgroundColor = new Color(col.hex, 0.16); t.borderColor = new Color(col.hex, 0.45); t.borderWidth = 1;
+  const b = t.addStack(); b.size = new Size(24, 24); b.cornerRadius = 12; b.backgroundColor = new Color(col.hex, 0.22); b.centerAlignContent(); b.addSpacer(); icon(b, sym, col, 10); b.addSpacer();
+  t.addSpacer(8);
   const v = t.addStack(); v.layoutVertically();
-  txt(v, label, Font.mediumSystemFont(10), C.muted, 0.7);
-  txt(v, value, Font.boldRoundedSystemFont(13), valCol || C.text, 0.6);
+  txt(v, label, Font.semiboldSystemFont(10), col, 0.7);
+  v.addSpacer(1);
+  txt(v, value, Font.boldRoundedSystemFont(16), C.text, 0.55);
   t.addSpacer();
 }
-function sup(d) { const v = d.sup || 0; return v < 0 ? { label: "Supplier advance", val: -v, col: C.cream } : { label: "Suppliers owed", val: v, col: C.amber }; }
+function sup(d) { const v = d.sup || 0; return v < 0 ? { label: "Supplier advance", val: -v, col: C.teal } : { label: "Suppliers owed", val: v, col: C.amber }; }
 function footer(w, d) {
   const f = w.addStack(); f.centerAlignContent();
   icon(f, d.live ? "lock.fill" : "wifi.slash", C.faint, 8); f.addSpacer(4);
@@ -172,9 +187,9 @@ function large(d) {
   const S = salesHead(w, d, true); w.addSpacer(5);
   bar(w, S, 306, 8); w.addSpacer(6);
   legend(w, S, 2, 10, false); w.addSpacer(8);
-  const r1 = w.addStack(); tile(r1, "banknote.fill", C.gold, "Cash in hand", fmt3(d.cash), null, 149, 40); r1.addSpacer(8); tile(r1, "building.columns.fill", C.cream, "Bank total", fmt3(d.bankTot), null, 149, 40);
+  const r1 = w.addStack(); tile(r1, "banknote.fill", C.gold, "Cash in hand", fmt3(d.cash), null, 149, 46); r1.addSpacer(8); tile(r1, "building.columns.fill", C.sky, "Bank total", fmt3(d.bankTot), null, 149, 46);
   w.addSpacer(6);
-  const r2 = w.addStack(); tile(r2, "person.2.fill", C.green, "Customers owe", fmt3(d.owe), C.green, 149, 40); r2.addSpacer(8); tile(r2, "shippingbox.fill", P.col, P.label, fmt3(P.val), P.col, 149, 40);
+  const r2 = w.addStack(); tile(r2, "person.2.fill", C.green, "Customers owe", fmt3(d.owe), null, 149, 46); r2.addSpacer(8); tile(r2, "shippingbox.fill", P.col, P.label, fmt3(P.val), null, 149, 46);
   w.addSpacer(8);
   const banks = (d.banks || []).slice(0, 3), maxB = Math.max(1, ...banks.map(b => Math.abs(b.v)));
   banks.forEach((b, i) => {
@@ -190,6 +205,7 @@ function large(d) {
 function errorWidget(msg) { const w = base(); w.setPadding(14, 14, 14, 14); header(w, {}, false); w.addSpacer(); const r = w.addStack(); icon(r, "exclamationmark.triangle.fill", C.gold, 12); r.addSpacer(6); txt(r, msg, Font.mediumSystemFont(11), C.text, 0.6); w.addSpacer(); return w; }
 
 /* ---------- run ---------- */
+await loadLogo();
 const data = await load();
 const fam = config.widgetFamily || "large"; FAM = fam;
 const widget = data.err ? errorWidget(data.err) : fam === "small" ? small(data) : fam === "medium" ? medium(data) : large(data);
