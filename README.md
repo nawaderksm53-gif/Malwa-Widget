@@ -7,6 +7,7 @@ The file is unreadable without the key, which lives only in the widget script on
 - `mwcrypto.js` — ChaCha20 + HMAC-SHA256, pure JS (runs in Node and Scriptable)
 - `publish.js` — `MW_KEY=<64 hex> node publish.js snapshot.json` → writes `data.enc`
 - `widget.template.js` — the widget source, with the key and crypto left as placeholders
+- `add-sales.js` — `node add-sales.js snapshot.json txns.jsonl` → adds this month's net sales split (cash / KNET / WAMD / credit) to the snapshot
 - `build-widget.js` — `MW_KEY=<64 hex> node build-widget.js out.js` → ready-to-paste Scriptable script (do not commit)
 
 Snapshot source: the Malwa Account Book's `config/widget` document, refreshed once a day at 11:30 PM Kuwait time.
