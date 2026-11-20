@@ -7,7 +7,7 @@ const URL_DATA = "https://raw.githubusercontent.com/nawaderksm53-gif/Malwa-Widge
 const APP = "https://claude.ai/artifact/S61xYX8NNjV9vhdLrwz2hL";
 // Logo badge: 1 = solid gold, 2 = cream with gold ring, 3 = gold "M" monogram, 4 = your own logo image (set LOGO_URL)
 const LOGO_STYLE = 2;
-const LOGO_EMOJI = "📈"; // shown inside the badge for styles 1 and 2; leave "" for the plain chart icon
+const LOGO_EMOJI = ""; // shown inside the badge for styles 1 and 2; leave "" for the plain chart icon
 const LOGO_URL = ""; // e.g. a PNG of the Malwa logo; used when LOGO_STYLE = 4
 
 const MWCrypto = (function () { const module = { exports: {} };
@@ -79,14 +79,14 @@ function dateLabel(iso) { const [y, m, dd] = iso.split("-").map(Number); return 
 let LOGO_IMG = null;
 async function loadLogo() { if (LOGO_STYLE !== 4 || !LOGO_URL) return; try { LOGO_IMG = await new Request(LOGO_URL).loadImage(); } catch (e) { LOGO_IMG = null; } }
 function logo(h, small) {
-  const z = small ? 24 : 30, b = h.addStack(); b.size = new Size(z, z); b.centerAlignContent();
+  const z = small ? 26 : 34, b = h.addStack(); b.size = new Size(z, z); b.centerAlignContent();
   const style = LOGO_STYLE === 4 && !LOGO_IMG ? 1 : LOGO_STYLE;
   if (style === 4) { b.cornerRadius = 8; b.backgroundColor = Color.white(); const i = b.addImage(LOGO_IMG); i.imageSize = new Size(z - 4, z - 4); i.applyFittingContentMode(); return; }
   if (style === 3) { b.cornerRadius = z / 2; b.backgroundColor = C.gold; b.addSpacer(); txt(b, "M", new Font("Georgia-Bold", small ? 15 : 18), new Color(C.m3)); b.addSpacer(); return; }
-  b.cornerRadius = small ? 7 : 9;
+  b.cornerRadius = small ? 8 : 10;
   if (style === 2) { b.backgroundColor = C.text; b.borderColor = C.gold; b.borderWidth = 2; } else b.backgroundColor = C.gold;
   b.addSpacer();
-  if (LOGO_EMOJI) txt(b, LOGO_EMOJI, Font.systemFont(small ? 13 : 16), C.text); else icon(b, "chart.line.uptrend.xyaxis", new Color(style === 2 ? C.m1 : C.m3), small ? 12 : 14);
+  if (LOGO_EMOJI) txt(b, LOGO_EMOJI, Font.systemFont(small ? 13 : 16), C.text); else icon(b, "chart.line.uptrend.xyaxis", new Color(style === 2 ? C.m1 : C.m3), small ? 13 : 16);
   b.addSpacer();
 }
 function header(w, d, small) {
