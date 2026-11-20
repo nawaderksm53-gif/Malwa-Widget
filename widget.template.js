@@ -123,17 +123,17 @@ function salesHead(w, d, big) {
   n.addSpacer(5); txt(n, "KWD", Font.semiboldSystemFont(10), C.faint);
   return S;
 }
-function legend(w, S, cols, fs, compact) {
-  const tot = S.parts.reduce((s, p) => s + Math.max(0, p[1]), 0);
+function legend(w, S, cols, fs, compact, width) {
+  const tot = S.parts.reduce((s, p) => s + Math.max(0, p[1]), 0), gap = 12, cw = Math.floor((width - gap * (cols - 1)) / cols), pw = fs * 3;
   for (let i = 0; i < S.parts.length; i += cols) {
-    const r = w.addStack(); r.centerAlignContent();
+    const r = w.addStack(); r.centerAlignContent(); r.size = new Size(width, 0);
     S.parts.slice(i, i + cols).forEach(([l, v, c], j) => {
-      if (j) r.addSpacer(10);
-      const cell = r.addStack(); cell.centerAlignContent();
+      if (j) r.addSpacer(gap);
+      const cell = r.addStack(); cell.centerAlignContent(); cell.size = new Size(cw, 0);
       const dot = cell.addStack(); dot.size = new Size(7, 7); dot.cornerRadius = 3.5; dot.backgroundColor = c; cell.addSpacer(5);
       txt(cell, l, Font.regularSystemFont(fs), C.muted, 0.7); cell.addSpacer();
-      txt(cell, (compact ? short(v) : fmt3(v)) + "  ", Font.semiboldMonospacedSystemFont(fs), C.text, 0.6);
-      txt(cell, pct(v, tot), Font.semiboldSystemFont(fs), c);
+      txt(cell, compact ? short(v) : fmt3(v), Font.semiboldMonospacedSystemFont(fs), C.text, 0.6);
+      const pc = cell.addStack(); pc.size = new Size(pw, 0); pc.addSpacer(); txt(pc, pct(v, tot), Font.semiboldSystemFont(fs), c);
     });
     if (i + cols < S.parts.length) w.addSpacer(4);
   }
@@ -181,7 +181,7 @@ function medium(d) {
   header(w, d, false); w.addSpacer(6);
   const S = salesHead(w, d, false); w.addSpacer(5);
   bar(w, S, 310, 7); w.addSpacer(6);
-  legend(w, S, 2, 10, true);
+  legend(w, S, 2, 10, true, 310);
   return w;
 }
 function large(d) {
@@ -189,7 +189,7 @@ function large(d) {
   header(w, d, false); w.addSpacer(7);
   const S = salesHead(w, d, true); w.addSpacer(5);
   bar(w, S, 306, 8); w.addSpacer(6);
-  legend(w, S, 2, 10, false); w.addSpacer(8);
+  legend(w, S, 2, 10, false, 306); w.addSpacer(8);
   const r1 = w.addStack(); tile(r1, "banknote.fill", C.gold, "Cash in hand", fmt3(d.cash), null, 149, 48); r1.addSpacer(8); tile(r1, "building.columns.fill", C.sky, "Bank total", fmt3(d.bankTot), null, 149, 48);
   w.addSpacer(6);
   const r2 = w.addStack(); tile(r2, "person.2.fill", C.green, "Customers owe", fmt3(d.owe), null, 149, 48); r2.addSpacer(8); tile(r2, "shippingbox.fill", P.col, P.label, fmt3(P.val), null, 149, 48);
