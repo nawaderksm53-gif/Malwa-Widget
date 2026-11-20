@@ -116,7 +116,7 @@ function salesHead(w, d, big) {
     txt(chip, "Profit " + fmt3(d.profitMonth), Font.semiboldSystemFont(11), pc, 0.7); }
   w.addSpacer(2);
   const n = w.addStack(); n.bottomAlignContent(); const [ip, fp] = fmt3(S.net).split(".");
-  txt(n, ip, Font.boldRoundedSystemFont(big ? 30 : 26), C.text, 0.5); txt(n, "." + fp, Font.semiboldRoundedSystemFont(big ? 16 : 14), C.muted);
+  txt(n, ip, Font.boldSystemFont(big ? 30 : 26), C.text, 0.5); txt(n, "." + fp, Font.semiboldSystemFont(big ? 16 : 14), C.muted);
   n.addSpacer(5); txt(n, "KWD", Font.semiboldSystemFont(big ? 11 : 9), C.faint);
   return S;
 }
@@ -129,7 +129,7 @@ function legend(w, S, cols, fs, compact) {
       const cell = r.addStack(); cell.centerAlignContent();
       const dot = cell.addStack(); dot.size = new Size(7, 7); dot.cornerRadius = 3.5; dot.backgroundColor = c; cell.addSpacer(5);
       txt(cell, l, Font.mediumSystemFont(fs), C.muted, 0.7); cell.addSpacer();
-      txt(cell, (compact ? short(v) : fmt3(v)) + "  ", Font.semiboldRoundedSystemFont(fs), C.text, 0.6);
+      txt(cell, (compact ? short(v) : fmt3(v)) + "  ", Font.semiboldSystemFont(fs), C.text, 0.6);
       txt(cell, pct(v, tot), Font.semiboldSystemFont(fs - 1), c);
     });
     if (i + cols < S.parts.length) w.addSpacer(4);
@@ -141,9 +141,9 @@ function tile(parent, sym, col, label, value, valCol, w, h) {
   const b = t.addStack(); b.size = new Size(24, 24); b.cornerRadius = 12; b.backgroundColor = new Color(col.hex, 0.22); b.centerAlignContent(); b.addSpacer(); icon(b, sym, col, 10); b.addSpacer();
   t.addSpacer(8);
   const v = t.addStack(); v.layoutVertically();
-  txt(v, label, Font.semiboldSystemFont(10), col, 0.7);
-  v.addSpacer(1);
-  txt(v, value, Font.boldRoundedSystemFont(16), C.text, 0.55);
+  txt(v, label, Font.mediumSystemFont(11), col, 0.7);
+  v.addSpacer(2);
+  txt(v, value, Font.boldSystemFont(19), C.text, 0.55);
   t.addSpacer();
 }
 function sup(d) { const v = d.sup || 0; return v < 0 ? { label: "Supplier advance", val: -v, col: C.teal } : { label: "Suppliers owed", val: v, col: C.amber }; }
@@ -163,12 +163,12 @@ function small(d) {
   header(w, d, true); w.addSpacer(6);
   const S = sales(d);
   txt(w, ((S.label || "").split(" ")[0] + " sales").toUpperCase(), Font.semiboldSystemFont(9), C.faint);
-  txt(w, fmt0(S.net), Font.boldRoundedSystemFont(24), C.text, 0.5);
+  txt(w, fmt0(S.net), Font.boldSystemFont(24), C.text, 0.5);
   w.addSpacer(4); bar(w, S, 134, 6); w.addSpacer(6);
   const tot = S.parts.reduce((s, p) => s + Math.max(0, p[1]), 0);
   S.parts.slice(0, 4).forEach(([l, v, c], i) => { const r = w.addStack(); r.centerAlignContent();
     const dot = r.addStack(); dot.size = new Size(6, 6); dot.cornerRadius = 3; dot.backgroundColor = c; r.addSpacer(5);
-    txt(r, l.split(" ")[0], Font.systemFont(10), C.muted); r.addSpacer(); txt(r, short(v), Font.semiboldRoundedSystemFont(10), C.text); r.addSpacer(4);
+    txt(r, l.split(" ")[0], Font.systemFont(10), C.muted); r.addSpacer(); txt(r, short(v), Font.semiboldSystemFont(10), C.text); r.addSpacer(4);
     const p = r.addStack(); p.size = new Size(28, 0); p.addSpacer(); txt(p, pct(v, tot), Font.semiboldSystemFont(9), c);
     if (i < 3) w.addSpacer(2); });
   return w;
@@ -187,16 +187,16 @@ function large(d) {
   const S = salesHead(w, d, true); w.addSpacer(5);
   bar(w, S, 306, 8); w.addSpacer(6);
   legend(w, S, 2, 10, false); w.addSpacer(8);
-  const r1 = w.addStack(); tile(r1, "banknote.fill", C.gold, "Cash in hand", fmt3(d.cash), null, 149, 46); r1.addSpacer(8); tile(r1, "building.columns.fill", C.sky, "Bank total", fmt3(d.bankTot), null, 149, 46);
+  const r1 = w.addStack(); tile(r1, "banknote.fill", C.gold, "Cash in hand", fmt3(d.cash), null, 149, 52); r1.addSpacer(8); tile(r1, "building.columns.fill", C.sky, "Bank total", fmt3(d.bankTot), null, 149, 52);
   w.addSpacer(6);
-  const r2 = w.addStack(); tile(r2, "person.2.fill", C.green, "Customers owe", fmt3(d.owe), null, 149, 46); r2.addSpacer(8); tile(r2, "shippingbox.fill", P.col, P.label, fmt3(P.val), null, 149, 46);
+  const r2 = w.addStack(); tile(r2, "person.2.fill", C.green, "Customers owe", fmt3(d.owe), null, 149, 52); r2.addSpacer(8); tile(r2, "shippingbox.fill", P.col, P.label, fmt3(P.val), null, 149, 52);
   w.addSpacer(8);
   const banks = (d.banks || []).slice(0, 3), maxB = Math.max(1, ...banks.map(b => Math.abs(b.v)));
   banks.forEach((b, i) => {
     const r = w.addStack(); r.centerAlignContent();
     const nm = r.addStack(); nm.size = new Size(96, 0); txt(nm, b.n.replace(/\s*-\s*Bank/i, "").replace(/\[.*\]/, "").replace(/\s*-\s*.*/, "").trim(), Font.mediumSystemFont(11), C.muted, 0.7); nm.addSpacer();
     r.addSpacer(6); r.addImage(meter(Math.abs(b.v) / maxB, 120, 6, C.cream)).imageSize = new Size(120, 6);
-    r.addSpacer(); txt(r, fmt0(b.v), Font.semiboldRoundedSystemFont(12), C.text);
+    r.addSpacer(); txt(r, fmt0(b.v), Font.semiboldSystemFont(12), C.text);
     if (i < banks.length - 1) w.addSpacer(3);
   });
   w.addSpacer(); footer(w, d);
