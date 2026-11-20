@@ -6,7 +6,8 @@ const KEY = "__MW_KEY__";
 const URL_DATA = "https://raw.githubusercontent.com/nawaderksm53-gif/Malwa-Widget/main/data.enc";
 const APP = "https://claude.ai/artifact/S61xYX8NNjV9vhdLrwz2hL";
 // Logo badge: 1 = solid gold, 2 = cream with gold ring, 3 = gold "M" monogram, 4 = your own logo image (set LOGO_URL)
-const LOGO_STYLE = 1;
+const LOGO_STYLE = 2;
+const LOGO_EMOJI = "📈"; // shown inside the badge for styles 1 and 2; leave "" for the plain chart icon
 const LOGO_URL = ""; // e.g. a PNG of the Malwa logo; used when LOGO_STYLE = 4
 
 const MWCrypto = (function () { const module = { exports: {} };
@@ -84,7 +85,9 @@ function logo(h, small) {
   if (style === 3) { b.cornerRadius = z / 2; b.backgroundColor = C.gold; b.addSpacer(); txt(b, "M", new Font("Georgia-Bold", small ? 15 : 18), new Color(C.m3)); b.addSpacer(); return; }
   b.cornerRadius = small ? 7 : 9;
   if (style === 2) { b.backgroundColor = C.text; b.borderColor = C.gold; b.borderWidth = 2; } else b.backgroundColor = C.gold;
-  b.addSpacer(); icon(b, "chart.line.uptrend.xyaxis", new Color(style === 2 ? C.m1 : C.m3), small ? 12 : 14); b.addSpacer();
+  b.addSpacer();
+  if (LOGO_EMOJI) txt(b, LOGO_EMOJI, Font.systemFont(small ? 13 : 16), C.text); else icon(b, "chart.line.uptrend.xyaxis", new Color(style === 2 ? C.m1 : C.m3), small ? 12 : 14);
+  b.addSpacer();
 }
 function header(w, d, small) {
   const h = w.addStack(); h.centerAlignContent();
