@@ -33,12 +33,26 @@ const short = v => { const a = Math.abs(v || 0); return sign(v) + (a >= 1e6 ? (a
 /* ---------- data ---------- */
 const fm = FileManager.local(), dir = fm.documentsDirectory();
 const CACHE = fm.joinPath(dir, "malwa-widget.enc");
+// Read the response as raw bytes (loadString can guess the wrong text encoding)
+function asciiOf(b64) { const T = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"; let out = "", buf = 0, bits = 0; for (const ch of b64) { const v = T.indexOf(ch); if (v < 0) continue; buf = ((buf << 6) | v) & 0xffffff; bits += 6; if (bits >= 8) { bits -= 8; out += String.fromCharCode((buf >> bits) & 255); } } return out; }
 async function load() {
-  let blob = null, live = true;
-  try { const r = new Request(URL_DATA + "?t=" + Date.now()); r.timeoutInterval = 15; blob = (await r.loadString()).trim(); if (!/^[A-Za-z0-9+/=]+$/.test(blob)) throw 0; fm.writeString(CACHE, blob); }
-  catch (e) { live = false; if (fm.fileExists(CACHE)) blob = fm.readString(CACHE).trim(); }
-  if (!blob) return { err: "No data yet — check connection" };
-  try { return Object.assign(MWCrypto.open(KEY, blob), { live }); } catch (e) { return { err: "Can't read data (" + (e.message || e) + ")" }; }
+  const SRC = [URL_DATA, "https://cdn.jsdelivr.net/gh/nawaderksm53-gif/malwa-widget@main/data.enc", "https://api.github.com/repos/nawaderksm53-gif/malwa-widget/contents/data.enc?ref=main"];
+  const errs = [];
+  for (let k = 0; k < SRC.length; k++) {
+    try {
+      const r = new Request(SRC[k] + (SRC[k].includes("?") ? "&" : "?") + "t=" + Date.now()); r.timeoutInterval = 15;
+      r.headers = { "Cache-Control": "no-cache" };
+      let raw = asciiOf((await r.load()).toBase64String());
+      if (k === 2) raw = String(JSON.parse(raw).content || "");
+      const blob = raw.replace(/\s+/g, "");
+      const bad = blob.search(/[^A-Za-z0-9+\/=]/);
+      try { const d = MWCrypto.open(KEY, blob); fm.writeString(CACHE, blob); return Object.assign(d, { live: true, why: "" }); }
+      catch (e) { errs.push((k + 1) + ":" + raw.length + "ch" + (bad >= 0 ? " bad@" + bad + "=" + blob.charCodeAt(bad) : "") + " " + String(e.message || e).slice(0, 18)); }
+    } catch (e) { errs.push((k + 1) + ":" + String((e && e.message) || e).slice(0, 25)); }
+  }
+  const why = errs.join(" | ");
+  if (!fm.fileExists(CACHE)) return { err: "No data — " + why };
+  try { return Object.assign(MWCrypto.open(KEY, fm.readString(CACHE).trim()), { live: false, why }); } catch (e) { return { err: "Can't read data (" + (e.message || e) + ") " + why }; }
 }
 /* ---------- drawing helpers ---------- */
 function ctx(w, h) { const c = new DrawContext(); c.size = new Size(w, h); c.opaque = false; c.respectScreenScale = true; return c; }
@@ -154,7 +168,7 @@ function footer(w, d) {
   const f = w.addStack(); f.centerAlignContent();
   icon(f, d.live ? "lock.fill" : "wifi.slash", C.faint, 7); f.addSpacer(4);
   const at = d.pub ? new Date(d.pub) : null;
-  txt(f, (d.live ? "Encrypted" : "Offline") + " · updated " + (at ? at.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"), Font.regularSystemFont(9), C.faint, 0.7);
+  txt(f, (d.live ? "Encrypted" : "Offline" + (d.why ? " (" + d.why + ")" : "")) + " · updated " + (at ? at.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"), Font.regularSystemFont(9), C.faint, 0.7);
   f.addSpacer();
   if (d.review) { icon(f, "exclamationmark.triangle.fill", C.gold, 8); f.addSpacer(3); txt(f, d.review + " in Review", Font.semiboldSystemFont(9), C.gold); }
 }
