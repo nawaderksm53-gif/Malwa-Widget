@@ -127,7 +127,7 @@ function header(w, d, small) {
 // sales split: falls back to the book's own month figures if the split isn't in the data yet
 function sales(d) {
   const ms = d.ms;
-  if (ms) return { label: ms.label, net: ms.net, parts: [["Cash", ms.cash, C.gold], ["KNET", ms.knet, C.sky], ["WAMD / Link", ms.wamd, C.teal], ["Credit", ms.credit, C.rose]].concat(ms.other ? [["Other", ms.other, C.cream]] : []) };
+  if (ms) return { label: ms.label, net: ms.net, parts: [["Cash", ms.cash, C.gold], ["Credit", ms.credit, C.rose], ["KNET", ms.knet, C.sky], ["WAMD / Link", ms.wamd, C.teal]].concat(ms.other ? [["Other", ms.other, C.cream]] : []) };
   const net = d.salesMonth || 0, cr = net * (d.creditPctMonth || 0) / 100;
   return { label: d.month, net, parts: [["Cash / bank", net - cr, C.gold], ["Credit", cr, C.rose]] };
 }
@@ -146,9 +146,10 @@ function salesHead(w, d, big) {
 }
 function legend(w, S, cols, fs, compact, width) {
   const tot = S.parts.reduce((s, p) => s + Math.max(0, p[1]), 0), gap = 12, cw = Math.floor((width - gap * (cols - 1)) / cols), pw = fs * 3.6;
-  for (let i = 0; i < S.parts.length; i += cols) {
+  const rows = Math.ceil(S.parts.length / cols); // fill column by column: Cash/Credit left, KNET/WAMD right
+  for (let i = 0; i < rows; i++) {
     const r = w.addStack(); r.centerAlignContent(); r.size = new Size(width, 0);
-    S.parts.slice(i, i + cols).forEach(([l, v, c], j) => {
+    Array.from({ length: cols }, (_, c) => S.parts[c * rows + i]).filter(Boolean).forEach(([l, v, c], j) => {
       if (j) r.addSpacer(gap);
       const cell = r.addStack(); cell.centerAlignContent(); cell.size = new Size(cw, 0);
       const dot = cell.addStack(); dot.size = new Size(7, 7); dot.cornerRadius = 3.5; dot.backgroundColor = c; cell.addSpacer(5);
@@ -156,7 +157,7 @@ function legend(w, S, cols, fs, compact, width) {
       txt(cell, compact ? short(v) : fmt3(v), Font.semiboldMonospacedSystemFont(fs), C.text, 0.6);
       const pc = cell.addStack(); pc.size = new Size(pw, 0); pc.addSpacer(); txt(pc, pct(v, tot), Font.semiboldSystemFont(fs), c, 0.7);
     });
-    if (i + cols < S.parts.length) w.addSpacer(4);
+    if (i < rows - 1) w.addSpacer(4);
   }
 }
 function tile(parent, sym, col, label, value, valCol, w, h) {
