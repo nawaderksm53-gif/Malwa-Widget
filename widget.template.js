@@ -84,7 +84,14 @@ function backdrop(fam) { // maroon gradient + the book's gold hexagon motif
 let FAM = "large";
 function base() {
   const w = new ListWidget(); w.url = APP; w.backgroundColor = new Color(C.m2); w.backgroundImage = backdrop(FAM);
-  w.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000); return w;
+  w.refreshAfterDate = nextRefresh(); return w;
+}
+// Ask iOS to refresh hourly, and right after the nightly publish (~23:45 Kuwait time)
+function nextRefresh() {
+  const now = Date.now(), hour = now + 60 * 60 * 1000, K = 3 * 3600 * 1000;
+  const k = new Date(now + K); let t = Date.UTC(k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate(), 23, 45) - K;
+  if (t <= now) t += 24 * 3600 * 1000;
+  return new Date(Math.min(hour, t));
 }
 
 /* ---------- building blocks ---------- */
