@@ -138,7 +138,7 @@ function salesHead(w, d, big) {
   return S;
 }
 function legend(w, S, cols, fs, compact, width) {
-  const tot = S.parts.reduce((s, p) => s + Math.max(0, p[1]), 0), gap = 12, cw = Math.floor((width - gap * (cols - 1)) / cols), pw = fs * 3;
+  const tot = S.parts.reduce((s, p) => s + Math.max(0, p[1]), 0), gap = 12, cw = Math.floor((width - gap * (cols - 1)) / cols), pw = fs * 3.6;
   for (let i = 0; i < S.parts.length; i += cols) {
     const r = w.addStack(); r.centerAlignContent(); r.size = new Size(width, 0);
     S.parts.slice(i, i + cols).forEach(([l, v, c], j) => {
@@ -147,7 +147,7 @@ function legend(w, S, cols, fs, compact, width) {
       const dot = cell.addStack(); dot.size = new Size(7, 7); dot.cornerRadius = 3.5; dot.backgroundColor = c; cell.addSpacer(5);
       txt(cell, l, Font.regularSystemFont(fs), C.muted, 0.7); cell.addSpacer();
       txt(cell, compact ? short(v) : fmt3(v), Font.semiboldMonospacedSystemFont(fs), C.text, 0.6);
-      const pc = cell.addStack(); pc.size = new Size(pw, 0); pc.addSpacer(); txt(pc, pct(v, tot), Font.semiboldSystemFont(fs), c);
+      const pc = cell.addStack(); pc.size = new Size(pw, 0); pc.addSpacer(); txt(pc, pct(v, tot), Font.semiboldSystemFont(fs), c, 0.7);
     });
     if (i + cols < S.parts.length) w.addSpacer(4);
   }
